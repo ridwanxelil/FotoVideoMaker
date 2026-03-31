@@ -142,7 +142,7 @@
     }
     input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
 
-    select, input[type=number], input[type=text] { 
+    select, input[type=number]:not(.slider-num), input[type=text] { 
       width: 100%; 
       background: var(--bg); 
       border: 1px solid var(--border); 
@@ -154,7 +154,7 @@
       outline: none; 
       transition: border-color 0.2s; 
     }
-    select:focus, input[type=number]:focus, input[type=text]:focus { border-color: var(--accent); }
+    select:focus, input[type=number]:not(.slider-num):focus, input[type=text]:focus { border-color: var(--accent); }
 
     .format-toggle { 
       display: flex; 
@@ -193,6 +193,27 @@
     .effect-card .icon { font-size: 15px; margin-bottom: 2px; display: block; }
 
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .slider-row { display: flex; align-items: center; gap: 6px; }
+    .slider-row input[type=range] { flex: 1; }
+    .slider-num {
+      width: 50px;
+      flex-shrink: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--accent3);
+      padding: 3px 5px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.2s;
+      -moz-appearance: textfield;
+    }
+    .slider-num::-webkit-inner-spin-button,
+    .slider-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .slider-num:focus { border-color: var(--accent); }
 
     input[type=color] { 
       width: 100%; 
@@ -488,14 +509,106 @@
       transition: width 0.3s; 
     }
     .progress-percent { font-size: 11px; color: var(--accent3); font-family: 'JetBrains Mono', monospace; }
+
+    /* ── MOBILE BOTTOM NAV ─────────────────────────────────────────────── */
+    .mobile-bottom-nav {
+      display: none;
+    }
+    .mob-panel {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      body { overflow: hidden; }
+
+      /* Hide desktop left sidebar */
+      .sidebar.left { display: none !important; }
+
+      /* Full width center */
+      .app-body { flex-direction: column; }
+      .center-panel { width: 100%; }
+
+      /* Bottom nav bar */
+      .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        z-index: 50;
+        height: 56px;
+        align-items: stretch;
+      }
+      .mob-tab {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        cursor: pointer;
+        color: var(--text-muted);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        font-family: 'JetBrains Mono', monospace;
+        border: none;
+        background: transparent;
+        transition: color 0.15s, background 0.15s;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .mob-tab .mob-icon { font-size: 18px; line-height: 1; }
+      .mob-tab.active { color: var(--accent); background: rgba(255,107,53,0.07); }
+      .mob-tab:active { background: rgba(255,107,53,0.12); }
+
+      /* Mobile panel drawer */
+      .mob-panel {
+        display: none;
+        position: fixed;
+        bottom: 56px; left: 0; right: 0;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        z-index: 49;
+        max-height: 55vh;
+        overflow-y: auto;
+        padding: 12px 16px 16px;
+      }
+      .mob-panel.active { display: block; }
+      .mob-panel::-webkit-scrollbar { width: 3px; }
+      .mob-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+      /* Push content up for nav bar */
+      .photo-strip-wrap { padding-bottom: 60px; }
+
+      /* Compact header on mobile */
+      header { padding: 8px 12px; }
+      .logo { font-size: 15px; }
+      .btn { padding: 6px 11px; font-size: 11px; }
+
+      /* Preview area smaller on mobile */
+      .preview-wrap { padding: 8px 8px 0; }
+
+      /* Mobile panel sections */
+      .mob-section-title {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        font-family: 'JetBrains Mono', monospace;
+        margin-bottom: 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+      }
+      .mob-section + .mob-section { margin-top: 14px; }
+    }
   </style>
 </head>
 <body>
   <header>
     <div class="logo">Photo<span>Motion</span></div>
     <div class="header-actions">
-      <button class="btn btn-secondary" id="exportGifBtn">Render GIF</button>
-      <button class="btn btn-primary" id="exportMp4Btn">Render Video</button>
     </div>
   </header>
 
@@ -510,11 +623,17 @@
         <div class="acc-body">
           <div class="control-row">
             <label class="control-label">Genişlik <span class="val" id="widthVal">1920</span>px</label>
-            <input type="range" id="widthSlider" min="640" max="4096" value="1920" step="16">
+            <div class="slider-row">
+              <input type="range" id="widthSlider" min="640" max="4096" value="1920" step="16">
+              <input type="number" class="slider-num" id="widthNum" min="640" max="4096" value="1920" step="16">
+            </div>
           </div>
           <div class="control-row">
             <label class="control-label">Yükseklik <span class="val" id="heightVal">1080</span>px</label>
-            <input type="range" id="heightSlider" min="360" max="4096" value="1080" step="16">
+            <div class="slider-row">
+              <input type="range" id="heightSlider" min="360" max="4096" value="1080" step="16">
+              <input type="number" class="slider-num" id="heightNum" min="360" max="4096" value="1080" step="16">
+            </div>
           </div>
           <div class="control-row">
             <select id="aspectRatio">
@@ -528,12 +647,18 @@
             </select>
           </div>
           <div class="control-row">
-            <label class="control-label">FPS <span class="val" id="fpsVal">30</span></label>
-            <input type="range" id="fpsSlider" min="10" max="60" value="30">
+            <label class="control-label">FPS <span class="val" id="fpsVal">1</span></label>
+            <div class="slider-row">
+              <input type="range" id="fpsSlider" min="1" max="60" value="1">
+              <input type="number" class="slider-num" id="fpsNum" min="1" max="60" value="1">
+            </div>
           </div>
           <div class="control-row">
             <label class="control-label">Bitrate <span class="val" id="bitrateVal">25</span>Mbps</label>
-            <input type="range" id="bitrateSlider" min="1" max="50" value="25">
+            <div class="slider-row">
+              <input type="range" id="bitrateSlider" min="1" max="50" value="25">
+              <input type="number" class="slider-num" id="bitrateNum" min="1" max="50" value="25">
+            </div>
           </div>
         </div>
       </div>
@@ -546,35 +671,15 @@
         <div class="acc-body">
           <div class="control-row">
             <label class="control-label">Kare Süresi <span class="val" id="frameDurVal">5000</span>ms</label>
-            <input type="range" id="frameDurSlider" min="500" max="10000" value="5000" step="100">
+            <div class="slider-row">
+              <input type="range" id="frameDurSlider" min="500" max="10000" value="5000" step="100">
+              <input type="number" class="slider-num" id="frameDurNum" min="500" max="10000" value="5000" step="100">
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="acc-section">
-        <div class="acc-header">
-          <span class="acc-title">🎨 Metin</span>
-          <span class="acc-arrow">▼</span>
-        </div>
-        <div class="acc-body">
-          <div class="control-row">
-            <label class="control-label">Metin</label>
-            <input type="text" id="textInput" placeholder="Metin girin...">
-          </div>
-          <div class="control-row">
-            <label class="control-label">Boyut <span class="val" id="textSizeVal">48</span>px</label>
-            <input type="range" id="textSizeSlider" min="12" max="200" value="48">
-          </div>
-          <div class="control-row">
-            <label class="control-label">Renk</label>
-            <input type="color" id="textColorInput" value="#ffffff">
-          </div>
-          <div class="control-row">
-            <label class="control-label">Arka Plan Rengi</label>
-            <input type="color" id="bgColorInput" value="#000000">
-          </div>
-        </div>
-      </div>
+
 
       <div class="acc-section open">
         <div class="acc-header">
@@ -589,21 +694,34 @@
           </div>
           <div class="control-row">
             <label class="control-label">Yatay Kaydır <span class="val" id="panXVal">0</span>%</label>
-            <input type="range" id="panXSlider" min="-100" max="100" value="0" step="5">
+            <div class="slider-row">
+              <input type="range" id="panXSlider" min="-100" max="100" value="0" step="5">
+              <input type="number" class="slider-num" id="panXNum" min="-100" max="100" value="0" step="5">
+            </div>
           </div>
           <div class="control-row">
             <label class="control-label">Dikey Kaydır <span class="val" id="panYVal">0</span>%</label>
-            <input type="range" id="panYSlider" min="-100" max="100" value="0" step="5">
+            <div class="slider-row">
+              <input type="range" id="panYSlider" min="-100" max="100" value="0" step="5">
+              <input type="number" class="slider-num" id="panYNum" min="-100" max="100" value="0" step="5">
+            </div>
           </div>
           <div class="control-row">
             <label class="control-label">Yakınlaştırma <span class="val" id="zoomScaleVal">100</span>%</label>
-            <input type="range" id="zoomScaleSlider" min="50" max="300" value="100" step="5">
+            <div class="slider-row">
+              <input type="range" id="zoomScaleSlider" min="50" max="300" value="100" step="5">
+              <input type="number" class="slider-num" id="zoomScaleNum" min="50" max="300" value="100" step="5">
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- CENTER PANEL -->
+      <!-- Render Buttons -->
+      <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border); margin-top: auto;">
+        <button class="btn btn-secondary" id="exportGifBtn" style="width:100%; padding: 10px;">🎞️ Render GIF</button>
+        <button class="btn btn-primary" id="exportMp4Btn" style="width:100%; padding: 10px;">🎬 Render Video</button>
+      </div>
+    </div>
     <div class="center-panel">
       <div class="preview-wrap">
         <div class="aspect-badge" id="aspectBadge">16:9</div>
@@ -653,7 +771,323 @@
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav">
+    <button class="mob-tab" id="mobTabAyarlar" onclick="mobShowPanel('ayarlar',this)">
+      <span class="mob-icon">⚙️</span>Ayarlar
+    </button>
+    <button class="mob-tab" id="mobTabAnimasyon" onclick="mobShowPanel('animasyon',this)">
+      <span class="mob-icon">🎬</span>Animasyon
+    </button>
+    <button class="mob-tab" id="mobTabKonum" onclick="mobShowPanel('konum',this)">
+      <span class="mob-icon">📍</span>Konum
+    </button>
+    <button class="mob-tab" id="mobTabExport" onclick="mobShowPanel('export',this)">
+      <span class="mob-icon">💾</span>Kaydet
+    </button>
+  </nav>
+
+  <!-- MOBILE PANELS -->
+  <div class="mob-panel" id="mobPanelAyarlar">
+    <div class="mob-section">
+      <div class="mob-section-title">⚙️ Çıktı Ayarları</div>
+      <div class="control-row">
+        <label class="control-label">Genişlik <span class="val" id="mWidthVal">1920</span>px</label>
+        <div class="slider-row">
+          <input type="range" id="mWidthSlider" min="640" max="4096" value="1920" step="16">
+          <input type="number" class="slider-num" id="mWidthNum" min="640" max="4096" value="1920" step="16">
+        </div>
+      </div>
+      <div class="control-row">
+        <label class="control-label">Yükseklik <span class="val" id="mHeightVal">1080</span>px</label>
+        <div class="slider-row">
+          <input type="range" id="mHeightSlider" min="360" max="4096" value="1080" step="16">
+          <input type="number" class="slider-num" id="mHeightNum" min="360" max="4096" value="1080" step="16">
+        </div>
+      </div>
+      <div class="control-row">
+        <select id="mAspectRatio">
+          <option value="custom">Özel Oran</option>
+          <option value="1920x1080">1920x1080 (16:9)</option>
+          <option value="1080x1920">1080x1920 (9:16)</option>
+          <option value="1080x1080">1080x1080 (1:1)</option>
+          <option value="1280x960">1280x960 (4:3)</option>
+          <option value="1920x1280">1920x1280 (3:2)</option>
+          <option value="2560x1080">2560x1080 (21:9)</option>
+        </select>
+      </div>
+      <div class="control-row">
+        <label class="control-label">FPS <span class="val" id="mFpsVal">30</span></label>
+        <div class="slider-row">
+          <input type="range" id="mFpsSlider" min="1" max="60" value="1">
+          <input type="number" class="slider-num" id="mFpsNum" min="1" max="60" value="1">
+        </div>
+      </div>
+      <div class="control-row">
+        <label class="control-label">Bitrate <span class="val" id="mBitrateVal">25</span>Mbps</label>
+        <div class="slider-row">
+          <input type="range" id="mBitrateSlider" min="1" max="50" value="25">
+          <input type="number" class="slider-num" id="mBitrateNum" min="1" max="50" value="25">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mob-panel" id="mobPanelAnimasyon">
+    <div class="mob-section">
+      <div class="mob-section-title">🎬 Animasyon</div>
+      <div class="control-row">
+        <label class="control-label">Kare Süresi <span class="val" id="mFrameDurVal">5000</span>ms</label>
+        <div class="slider-row">
+          <input type="range" id="mFrameDurSlider" min="500" max="10000" value="5000" step="100">
+          <input type="number" class="slider-num" id="mFrameDurNum" min="500" max="10000" value="5000" step="100">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mob-panel" id="mobPanelKonum">
+    <div class="mob-section">
+      <div class="mob-section-title">📍 Konum Ayarları</div>
+      <div class="control-row" style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+        <label class="control-label" style="color:var(--accent)">
+          Seçili Fotoğraf: <span id="mSelectedPhotoLabel" style="font-weight:700">Hiçbiri</span>
+        </label>
+      </div>
+      <div class="control-row">
+        <label class="control-label">Yatay Kaydır <span class="val" id="mPanXVal">0</span>%</label>
+        <div class="slider-row">
+          <input type="range" id="mPanXSlider" min="-100" max="100" value="0" step="5">
+          <input type="number" class="slider-num" id="mPanXNum" min="-100" max="100" value="0" step="5">
+        </div>
+      </div>
+      <div class="control-row">
+        <label class="control-label">Dikey Kaydır <span class="val" id="mPanYVal">0</span>%</label>
+        <div class="slider-row">
+          <input type="range" id="mPanYSlider" min="-100" max="100" value="0" step="5">
+          <input type="number" class="slider-num" id="mPanYNum" min="-100" max="100" value="0" step="5">
+        </div>
+      </div>
+      <div class="control-row">
+        <label class="control-label">Yakınlaştırma <span class="val" id="mZoomScaleVal">100</span>%</label>
+        <div class="slider-row">
+          <input type="range" id="mZoomScaleSlider" min="50" max="300" value="100" step="5">
+          <input type="number" class="slider-num" id="mZoomScaleNum" min="50" max="300" value="100" step="5">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mob-panel" id="mobPanelExport">
+    <div class="mob-section">
+      <div class="mob-section-title">💾 Dışa Aktar</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+        <button class="btn btn-secondary" style="width:100%;padding:12px" onclick="document.getElementById('exportGifBtn').click()">🎞️ Render GIF</button>
+        <button class="btn btn-primary" style="width:100%;padding:12px" onclick="document.getElementById('exportMp4Btn').click()">🎬 Render Video</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /* ── GIF Encoder with Median-Cut quantization ──────────────────────────
+     Produces accurate colors — no filtering artifacts.
+     Uses median-cut to find the 256 most representative colors per frame,
+     then nearest-neighbor mapping + LZW compression.                      */
+  (function(global){
+
+    // ── Median-cut color quantization ────────────────────────────────────
+    function medianCut(pixels, maxColors) {
+      // Sample pixels (skip alpha, sample every 4th pixel for speed)
+      const sample = [];
+      for (let i = 0; i < pixels.length; i += 16) {
+        if (pixels[i+3] > 0) sample.push([pixels[i], pixels[i+1], pixels[i+2]]);
+      }
+      if (sample.length === 0) {
+        const pal = []; for (let i=0;i<maxColors;i++) pal.push([0,0,0]); return pal;
+      }
+
+      function split(bucket) {
+        // Find channel with greatest range
+        let minR=255,maxR=0,minG=255,maxG=0,minB=255,maxB=0;
+        for (const [r,g,b] of bucket) {
+          if(r<minR)minR=r; if(r>maxR)maxR=r;
+          if(g<minG)minG=g; if(g>maxG)maxG=g;
+          if(b<minB)minB=b; if(b>maxB)maxB=b;
+        }
+        const rng = [maxR-minR, maxG-minG, maxB-minB];
+        const ch = rng.indexOf(Math.max(...rng)); // 0=R,1=G,2=B
+        bucket.sort((a,b) => a[ch] - b[ch]);
+        const mid = Math.floor(bucket.length / 2);
+        return [bucket.slice(0, mid), bucket.slice(mid)];
+      }
+
+      function avg(bucket) {
+        let r=0,g=0,b=0;
+        for (const c of bucket) { r+=c[0]; g+=c[1]; b+=c[2]; }
+        const n = bucket.length;
+        return [Math.round(r/n), Math.round(g/n), Math.round(b/n)];
+      }
+
+      let buckets = [sample];
+      while (buckets.length < maxColors) {
+        // Split the largest bucket
+        let li = 0;
+        for (let i=1; i<buckets.length; i++) if (buckets[i].length > buckets[li].length) li = i;
+        if (buckets[li].length < 2) break;
+        const [a, b] = split(buckets[li]);
+        buckets.splice(li, 1, a, b);
+      }
+
+      const palette = buckets.map(avg);
+      // Pad to power of 2 (required by GIF spec)
+      let size = 2; while (size < palette.length) size <<= 1;
+      while (palette.length < size) palette.push([0,0,0]);
+      return palette;
+    }
+
+    // ── Nearest-neighbor palette mapping ─────────────────────────────────
+    function applyPalette(pixels, palette) {
+      const n = pixels.length >> 2;
+      const index = new Uint8Array(n);
+      // Build a fast lookup cache with quantized keys
+      const cache = new Map();
+      for (let i = 0; i < n; i++) {
+        const o = i << 2;
+        // Quantize to 5-bit per channel for cache key
+        const key = ((pixels[o]>>3)<<10) | ((pixels[o+1]>>3)<<5) | (pixels[o+2]>>3);
+        if (cache.has(key)) {
+          index[i] = cache.get(key);
+          continue;
+        }
+        let best = 0, bestD = Infinity;
+        const r = pixels[o], g = pixels[o+1], b = pixels[o+2];
+        for (let j = 0; j < palette.length; j++) {
+          const dr = r - palette[j][0], dg = g - palette[j][1], db = b - palette[j][2];
+          const d = dr*dr + dg*dg + db*db;
+          if (d < bestD) { bestD = d; best = j; if (d === 0) break; }
+        }
+        index[i] = best;
+        cache.set(key, best);
+      }
+      return index;
+    }
+
+    // ── LZW encoder ──────────────────────────────────────────────────────
+    function lzwEncode(pixels, minCodeSize) {
+      const out = [];
+      let pos = 0, accum = 0;
+      function emit(code, bits) {
+        accum |= code << pos; pos += bits;
+        while (pos >= 8) { out.push(accum & 0xFF); accum >>= 8; pos -= 8; }
+      }
+      const clr = 1 << minCodeSize, eoi = clr + 1;
+      let codeSize = minCodeSize + 1, nextCode = eoi + 1, maxCode = 1 << codeSize;
+      const table = new Map();
+      emit(clr, codeSize);
+      let prefix = pixels[0];
+      for (let i = 1; i < pixels.length; i++) {
+        const suffix = pixels[i];
+        const key = (prefix << 8) | suffix;
+        if (table.has(key)) {
+          prefix = table.get(key);
+        } else {
+          emit(prefix, codeSize);
+          if (nextCode < 4096) {
+            table.set(key, nextCode++);
+            if (nextCode > maxCode) { codeSize++; maxCode <<= 1; }
+          } else {
+            emit(clr, codeSize);
+            table.clear(); nextCode = eoi + 1; codeSize = minCodeSize + 1; maxCode = 1 << codeSize;
+          }
+          prefix = suffix;
+        }
+      }
+      emit(prefix, codeSize);
+      emit(eoi, codeSize);
+      if (pos > 0) out.push(accum & 0xFF);
+      return out;
+    }
+
+    function writeSubBlocks(out, data) {
+      let i = 0;
+      while (i < data.length) {
+        const n = Math.min(255, data.length - i);
+        out.push(n);
+        for (let j = 0; j < n; j++) out.push(data[i++]);
+      }
+      out.push(0);
+    }
+
+    // ── GIF Encoder ──────────────────────────────────────────────────────
+    function GIFEncoder() {
+      const out = [];
+      let firstFrame = true;
+
+      // GIF89a header
+      [0x47,0x49,0x46,0x38,0x39,0x61].forEach(b => out.push(b));
+
+      function writeFrame(indexedPixels, w, h, opts) {
+        const palette   = opts.palette || [[0,0,0],[255,255,255]];
+        const delay     = opts.delay !== undefined ? opts.delay : 10; // centiseconds
+        const palBits   = Math.max(2, Math.ceil(Math.log2(palette.length)));
+        const palSize   = 1 << palBits;
+
+        if (firstFrame) {
+          // Logical Screen Descriptor
+          out.push(w & 0xFF, w >> 8, h & 0xFF, h >> 8);
+          out.push(0x80 | (palBits - 1)); // global color table flag + size
+          out.push(0); // background color index
+          out.push(0); // pixel aspect ratio
+          // Global Color Table
+          for (let i = 0; i < palSize; i++) {
+            const c = palette[i] || [0,0,0];
+            out.push(c[0], c[1], c[2]);
+          }
+          // Netscape Application Extension (loop forever)
+          out.push(0x21,0xFF,0x0B);
+          [78,69,84,83,67,65,80,69,50,46,48].forEach(b=>out.push(b)); // NETSCAPE2.0
+          out.push(0x03,0x01,0x00,0x00,0x00);
+          firstFrame = false;
+        }
+
+        // Graphic Control Extension
+        out.push(0x21, 0xF9, 0x04);
+        out.push(0x00);                   // disposal: do not dispose
+        out.push(delay & 0xFF, delay >> 8); // delay in centiseconds
+        out.push(0x00);                   // transparent color index (none)
+        out.push(0x00);                   // block terminator
+
+        // Image Descriptor — use local color table per frame for accuracy
+        out.push(0x2C);
+        out.push(0,0, 0,0);              // left, top = 0,0
+        out.push(w & 0xFF, w >> 8, h & 0xFF, h >> 8);
+        out.push(0x80 | (palBits - 1)); // local color table flag + size
+        // Local Color Table
+        for (let i = 0; i < palSize; i++) {
+          const c = palette[i] || [0,0,0];
+          out.push(c[0], c[1], c[2]);
+        }
+
+        // Image Data
+        const minCode = Math.max(2, palBits);
+        out.push(minCode);
+        writeSubBlocks(out, lzwEncode(indexedPixels, minCode));
+      }
+
+      function finish() { out.push(0x3B); }
+
+      function bytes() { return new Uint8Array(out); }
+
+      return { writeFrame, finish, bytes };
+    }
+
+    global.gifenc = { GIFEncoder, quantize: medianCut, applyPalette };
+    global.GIFEncoder = GIFEncoder;
+    global.quantize = medianCut;
+    global.applyPalette = applyPalette;
+
+  })(window);
+  </script>
 
   <script>
     const photos = [];
@@ -666,28 +1100,19 @@
     const settings = {
       width: 1920,
       height: 1080,
-      fps: 30,
+      fps: 1,
       bitrate: 25,
       frameDur: 5000,
-      text: '',
-      textSize: 48,
-      textColor: '#ffffff',
-      bgColor: '#000000',
       panX: 0,
       panY: 0,
       zoomScale: 1
     };
 
-    // UI Elements
     const widthSlider = document.getElementById('widthSlider');
     const heightSlider = document.getElementById('heightSlider');
     const fpsSlider = document.getElementById('fpsSlider');
     const bitrateSlider = document.getElementById('bitrateSlider');
     const frameDurSlider = document.getElementById('frameDurSlider');
-    const textInput = document.getElementById('textInput');
-    const textSizeSlider = document.getElementById('textSizeSlider');
-    const textColorInput = document.getElementById('textColorInput');
-    const bgColorInput = document.getElementById('bgColorInput');
     const aspectRatioSelect = document.getElementById('aspectRatio');
     const panXSlider = document.getElementById('panXSlider');
     const panYSlider = document.getElementById('panYSlider');
@@ -726,92 +1151,71 @@
       });
     }
 
-    // Slider Events
-    widthSlider.addEventListener('input', (e) => {
-      settings.width = parseInt(e.target.value);
-      updateValueDisplay(widthSlider, settings.width);
+    // --- Number input sync helper ---
+    function syncSliderNum(slider, numInput, onchange) {
+      slider.addEventListener('input', (e) => {
+        const v = parseFloat(e.target.value);
+        numInput.value = v;
+        onchange(v);
+      });
+      numInput.addEventListener('input', (e) => {
+        let v = parseFloat(e.target.value);
+        if (isNaN(v)) return;
+        v = Math.max(parseFloat(slider.min), Math.min(parseFloat(slider.max), v));
+        slider.value = v;
+        numInput.value = v;
+        onchange(v);
+      });
+    }
+
+    // Slider + Number events
+    syncSliderNum(widthSlider, document.getElementById('widthNum'), (v) => {
+      settings.width = Math.round(v);
+      document.getElementById('widthVal').textContent = settings.width;
       resizePreview();
     });
 
-    heightSlider.addEventListener('input', (e) => {
-      settings.height = parseInt(e.target.value);
-      updateValueDisplay(heightSlider, settings.height);
+    syncSliderNum(heightSlider, document.getElementById('heightNum'), (v) => {
+      settings.height = Math.round(v);
+      document.getElementById('heightVal').textContent = settings.height;
       resizePreview();
     });
 
-    fpsSlider.addEventListener('input', (e) => {
-      settings.fps = parseInt(e.target.value);
-      updateValueDisplay(fpsSlider, settings.fps);
+    syncSliderNum(fpsSlider, document.getElementById('fpsNum'), (v) => {
+      settings.fps = Math.round(v);
+      document.getElementById('fpsVal').textContent = settings.fps;
     });
 
-    bitrateSlider.addEventListener('input', (e) => {
-      settings.bitrate = parseInt(e.target.value);
-      updateValueDisplay(bitrateSlider, settings.bitrate);
+    syncSliderNum(bitrateSlider, document.getElementById('bitrateNum'), (v) => {
+      settings.bitrate = Math.round(v);
+      document.getElementById('bitrateVal').textContent = settings.bitrate;
     });
 
-    frameDurSlider.addEventListener('input', (e) => {
-      settings.frameDur = parseInt(e.target.value);
-      updateValueDisplay(frameDurSlider, settings.frameDur);
+    syncSliderNum(frameDurSlider, document.getElementById('frameDurNum'), (v) => {
+      settings.frameDur = Math.round(v);
+      document.getElementById('frameDurVal').textContent = settings.frameDur;
       updateTotalFrames();
     });
 
-    textInput.addEventListener('input', (e) => {
-      settings.text = e.target.value;
+    syncSliderNum(panXSlider, document.getElementById('panXNum'), (v) => {
+      if (selectedPhotoIndex >= 0) photos[selectedPhotoIndex].panX = v;
+      else settings.panX = v;
+      document.getElementById('panXVal').textContent = Math.round(v);
       resizePreview();
     });
 
-    textSizeSlider.addEventListener('input', (e) => {
-      settings.textSize = parseInt(e.target.value);
-      updateValueDisplay(textSizeSlider, settings.textSize);
+    syncSliderNum(panYSlider, document.getElementById('panYNum'), (v) => {
+      if (selectedPhotoIndex >= 0) photos[selectedPhotoIndex].panY = v;
+      else settings.panY = v;
+      document.getElementById('panYVal').textContent = Math.round(v);
       resizePreview();
     });
 
-    textColorInput.addEventListener('change', (e) => {
-      settings.textColor = e.target.value;
-      resizePreview();
-    });
-
-    bgColorInput.addEventListener('change', (e) => {
-      settings.bgColor = e.target.value;
-      resizePreview();
-    });
-
-    panXSlider.addEventListener('input', (e) => {
-      const value = parseInt(e.target.value);
-      
-      if (selectedPhotoIndex >= 0) {
-        photos[selectedPhotoIndex].panX = value;
-      } else {
-        settings.panX = value;
-      }
-      
-      updateValueDisplay(panXSlider, value);
-      resizePreview();
-    });
-
-    panYSlider.addEventListener('input', (e) => {
-      const value = parseInt(e.target.value);
-      
-      if (selectedPhotoIndex >= 0) {
-        photos[selectedPhotoIndex].panY = value;
-      } else {
-        settings.panY = value;
-      }
-      
-      updateValueDisplay(panYSlider, value);
-      resizePreview();
-    });
-
-    zoomScaleSlider.addEventListener('input', (e) => {
-      const value = parseInt(e.target.value) / 100;
-      
-      if (selectedPhotoIndex >= 0) {
-        photos[selectedPhotoIndex].zoomScale = value;
-      } else {
-        settings.zoomScale = value;
-      }
-      
-      updateValueDisplay(zoomScaleSlider, parseInt(e.target.value));
+    syncSliderNum(zoomScaleSlider, document.getElementById('zoomScaleNum'), (v) => {
+      const scale = v / 100;
+      if (selectedPhotoIndex >= 0) photos[selectedPhotoIndex].zoomScale = scale;
+      else settings.zoomScale = scale;
+      document.getElementById('zoomScaleVal').textContent = Math.round(v);
       resizePreview();
     });
 
@@ -867,10 +1271,10 @@
       const photoIdx = photos.length - 1;
       const photo = photos[photoIdx];
       
-      // Initialize photo with individual position settings
-      if (!photo.panX) photo.panX = 0;
-      if (!photo.panY) photo.panY = 0;
-      if (!photo.zoomScale) photo.zoomScale = 1;
+      // Initialize photo with individual position settings (use explicit undefined check)
+      if (photo.panX === undefined) photo.panX = 0;
+      if (photo.panY === undefined) photo.panY = 0;
+      if (photo.zoomScale === undefined) photo.zoomScale = 1;
       
       const thumb = document.createElement('div');
       thumb.className = 'photo-thumb';
@@ -878,22 +1282,40 @@
         <button class="close-btn">×</button>`;
       
       thumb.addEventListener('click', () => {
-        // Deselect previous
         document.querySelectorAll('.photo-thumb').forEach(t => t.classList.remove('active'));
         thumb.classList.add('active');
         selectedPhotoIndex = photoIdx;
         
-        // Update selected photo label
         document.getElementById('selectedPhotoLabel').textContent = `Fotoğraf ${photoIdx + 1}`;
         
-        // Update sidebar controls with this photo's position
-        panXSlider.value = photo.panX;
-        panYSlider.value = photo.panY;
-        zoomScaleSlider.value = Math.round(photo.zoomScale * 100);
-        
-        updateValueDisplay(panXSlider, photo.panX);
-        updateValueDisplay(panYSlider, photo.panY);
-        updateValueDisplay(zoomScaleSlider, Math.round(photo.zoomScale * 100));
+        // Sync all sidebar controls (slider + number input + label)
+        const px = photo.panX;
+        const py = photo.panY;
+        const zp = Math.round(photo.zoomScale * 100);
+
+        panXSlider.value = px;
+        document.getElementById('panXNum').value = px;
+        document.getElementById('panXVal').textContent = Math.round(px);
+
+        panYSlider.value = py;
+        document.getElementById('panYNum').value = py;
+        document.getElementById('panYVal').textContent = Math.round(py);
+
+        zoomScaleSlider.value = zp;
+        document.getElementById('zoomScaleNum').value = zp;
+        document.getElementById('zoomScaleVal').textContent = zp;
+
+        // Also sync mobile konum panel
+        document.getElementById('mPanXSlider').value = px;
+        document.getElementById('mPanXNum').value = px;
+        document.getElementById('mPanXVal').textContent = Math.round(px);
+        document.getElementById('mPanYSlider').value = py;
+        document.getElementById('mPanYNum').value = py;
+        document.getElementById('mPanYVal').textContent = Math.round(py);
+        document.getElementById('mZoomScaleSlider').value = zp;
+        document.getElementById('mZoomScaleNum').value = zp;
+        document.getElementById('mZoomScaleVal').textContent = zp;
+        document.getElementById('mSelectedPhotoLabel').textContent = `Fotoğraf ${photoIdx + 1}`;
         
         resizePreview();
       });
@@ -905,6 +1327,9 @@
         if (selectedPhotoIndex === idx) {
           selectedPhotoIndex = -1;
           document.getElementById('selectedPhotoLabel').textContent = 'Hiçbiri';
+          document.getElementById('mSelectedPhotoLabel').textContent = 'Hiçbiri';
+        } else if (selectedPhotoIndex > idx) {
+          selectedPhotoIndex--;
         }
         thumb.remove();
         updateTotalFrames();
@@ -935,16 +1360,12 @@
       wrap.style.width = (settings.width * scale) + 'px';
       wrap.style.height = (settings.height * scale) + 'px';
 
-      ctx.fillStyle = settings.bgColor;
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, settings.width, settings.height);
 
       if (photos.length > 0) {
         const photoIdx = selectedPhotoIndex >= 0 ? selectedPhotoIndex : 0;
         drawImageFit(ctx, photos[photoIdx].img, 0, 0, settings.width, settings.height, photoIdx);
-      }
-
-      if (settings.text) {
-        drawText(ctx, settings.text, settings.width, settings.height);
       }
 
       updateAspectBadge();
@@ -956,9 +1377,9 @@
       // Get individual photo settings or use global
       let panX = 0, panY = 0, zoomScale = 1;
       if (photoIdx !== undefined && photos[photoIdx]) {
-        panX = photos[photoIdx].panX || 0;
-        panY = photos[photoIdx].panY || 0;
-        zoomScale = photos[photoIdx].zoomScale || 1;
+        panX = photos[photoIdx].panX ?? 0;
+        panY = photos[photoIdx].panY ?? 0;
+        zoomScale = photos[photoIdx].zoomScale ?? 1;
       } else {
         panX = settings.panX;
         panY = settings.panY;
@@ -989,22 +1410,13 @@
       ctx.drawImage(img, dx, dy, zoomedW, zoomedH);
     }
 
-    function drawText(ctx, text, w, h) {
-      ctx.font = `bold ${settings.textSize}px 'Syne'`;
-      ctx.fillStyle = settings.textColor;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(text, w / 2, h - settings.textSize - 20);
-    }
-
     function buildFrameCanvas(photoIdx) {
       const c = document.createElement('canvas');
       c.width = settings.width; c.height = settings.height;
       const ctx = c.getContext('2d');
-      ctx.fillStyle = settings.bgColor;
+      ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, settings.width, settings.height);
       drawImageFit(ctx, photos[photoIdx].img, 0, 0, settings.width, settings.height, photoIdx);
-      drawText(ctx, settings.text, settings.width, settings.height);
       return c;
     }
 
@@ -1039,8 +1451,17 @@
       const deltaX = e.clientX - mouseStartX;
       const deltaY = e.clientY - mouseStartY;
       
-      const moveX = (deltaX / settings.width) * 100;
-      const moveY = (deltaY / settings.height) * 100;
+      let moveX = (deltaX / settings.width) * 100;
+      let moveY = (deltaY / settings.height) * 100;
+
+      // Shift = axis lock (Adobe-style): lock to dominant axis
+      if (e.shiftKey) {
+        if (Math.abs(deltaX) >= Math.abs(deltaY)) {
+          moveY = 0;
+        } else {
+          moveX = 0;
+        }
+      }
       
       let newPanX = Math.max(-100, Math.min(100, startPanX + moveX));
       let newPanY = Math.max(-100, Math.min(100, startPanY + moveY));
@@ -1055,9 +1476,11 @@
       
       panXSlider.value = newPanX;
       panYSlider.value = newPanY;
+      document.getElementById('panXNum').value = Math.round(newPanX);
+      document.getElementById('panYNum').value = Math.round(newPanY);
       
-      updateValueDisplay(panXSlider, newPanX);
-      updateValueDisplay(panYSlider, newPanY);
+      updateValueDisplay(panXSlider, Math.round(newPanX));
+      updateValueDisplay(panYSlider, Math.round(newPanY));
       
       resizePreview();
     });
@@ -1065,6 +1488,14 @@
     document.addEventListener('mouseup', () => {
       isMouseDown = false;
       previewCanvasWrap.style.cursor = 'grab';
+    });
+
+    // Shift key cursor hint
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift' && isMouseDown) previewCanvasWrap.style.cursor = 'crosshair';
+    });
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift') previewCanvasWrap.style.cursor = isMouseDown ? 'grabbing' : 'grab';
     });
 
     previewCanvasWrap.addEventListener('wheel', (e) => {
@@ -1083,6 +1514,7 @@
       
       const zoomPercent = Math.round(newZoomScale * 100);
       zoomScaleSlider.value = zoomPercent;
+      document.getElementById('zoomScaleNum').value = zoomPercent;
       
       updateValueDisplay(zoomScaleSlider, zoomPercent);
       resizePreview();
@@ -1093,24 +1525,44 @@
       playbackState = !playbackState;
       playBtn.textContent = playbackState ? '⏸' : '▶';
       if (playbackState) {
-        startTime = performance.now() - (currentFrame * (1000 / settings.fps));
+        startTime = performance.now();
+        currentFrame = 0;
         animate();
       }
     });
 
+    function getPhotoIndexAtFrame(frame) {
+      // Each photo occupies exactly frameDur ms worth of frames at current fps
+      const holdF = Math.max(1, Math.round((settings.frameDur / 1000) * settings.fps));
+      return Math.min(photos.length - 1, Math.floor(frame / holdF));
+    }
+
     function animate() {
       if (!playbackState) return;
       const elapsed = performance.now() - startTime;
-      currentFrame = Math.floor(elapsed / (1000 / settings.fps));
+      // Use frameDur directly: which photo index are we on?
+      const photoIdx = Math.floor(elapsed / settings.frameDur);
       
-      if (currentFrame >= totalFrames) {
+      if (photoIdx >= photos.length) {
         playbackState = false;
         playBtn.textContent = '▶';
         currentFrame = 0;
+        startTime = performance.now();
+        updatePreviewFrame();
+        updateTimeline();
         return;
       }
 
-      updatePreviewFrame();
+      // Map elapsed to frame number for timeline
+      const holdF = Math.max(1, Math.round((settings.frameDur / 1000) * settings.fps));
+      currentFrame = photoIdx * holdF + Math.floor(((elapsed % settings.frameDur) / settings.frameDur) * holdF);
+
+      // Draw the correct photo
+      const ctx = previewCanvas.getContext('2d');
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, settings.width, settings.height);
+      if (photos[photoIdx]) drawImageFit(ctx, photos[photoIdx].img, 0, 0, settings.width, settings.height, photoIdx);
+
       updateTimeline();
       requestAnimationFrame(animate);
     }
@@ -1122,10 +1574,9 @@
       let accum = 0;
       for (let i = 0; i < photos.length; i++) {
         if (currentFrame < accum + holdF) {
-          ctx.fillStyle = settings.bgColor;
+          ctx.fillStyle = '#000000';
           ctx.fillRect(0, 0, settings.width, settings.height);
           drawImageFit(ctx, photos[i].img, 0, 0, settings.width, settings.height, i);
-          drawText(ctx, settings.text, settings.width, settings.height);
           return;
         }
         accum += holdF;
@@ -1188,61 +1639,55 @@
 
     // Export Functions
     async function exportGIF() {
-      if (photos.length === 0) {
-        alert('Lütfen fotoğraf ekleyin!');
-        return;
-      }
+      if (photos.length === 0) { alert('Lütfen fotoğraf ekleyin!'); return; }
 
       lockSettings(true);
       renderOverlay.classList.add('show');
-      const fps = Math.min(settings.fps, 25);
-      const holdCount = Math.max(1, Math.round((settings.frameDur / 1000) * fps));
-      const frameDelay = Math.round(1000 / fps);
-      const allFrames = [];
 
-      for (let i = 0; i < photos.length; i++) {
-        setProgress((i / photos.length) * 60, `Kare ${i + 1}/${photos.length} hazırlanıyor...`);
-        await sleep(1);
-        for (let f = 0; f < holdCount; f++) {
-          allFrames.push({ canvas: buildFrameCanvas(i), delay: frameDelay });
-        }
-      }
-
-      setProgress(65, 'GIF oluşturuluyor...');
-      await sleep(5);
-
-      let workerUrl;
       try {
-        const resp = await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js');
-        const text = await resp.text();
-        const blob = new Blob([text], { type: 'application/javascript' });
-        workerUrl = URL.createObjectURL(blob);
-      } catch (e) {
-        workerUrl = 'https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js';
-      }
+        const { GIFEncoder, quantize, applyPalette } = window.gifenc;
 
-      const gif = new GIF({
-        workers: 4,
-        quality: 10,
-        width: settings.width,
-        height: settings.height,
-        workerScript: workerUrl
-      });
+        // GIF delay is in centiseconds. Each photo shows for exactly frameDur ms.
+        // We write 1 frame per photo with the correct delay — no holdCount needed.
+        // (Multiple duplicate frames would waste space and gain nothing.)
+        const delayCenti = Math.round(settings.frameDur / 10);
 
-      for (let i = 0; i < allFrames.length; i++) {
-        if (i % 10 === 0) {
-          setProgress(65 + (i / allFrames.length) * 25, `GIF: ${i + 1}/${allFrames.length}`);
-          await sleep(0);
+        const W = settings.width;
+        const H = settings.height;
+
+        const encoder = GIFEncoder();
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = W;
+        tmpCanvas.height = H;
+        const tmpCtx = tmpCanvas.getContext('2d', { willReadFrequently: true });
+
+        for (let i = 0; i < photos.length; i++) {
+          setProgress(Math.round((i / photos.length) * 90), `Kare ${i + 1}/${photos.length} işleniyor...`);
+          await sleep(0); // yield to UI
+
+          // Draw this photo with its own pan/zoom
+          tmpCtx.fillStyle = '#000000';
+          tmpCtx.fillRect(0, 0, W, H);
+          drawImageFit(tmpCtx, photos[i].img, 0, 0, W, H, i);
+
+          // Get raw RGBA pixels from canvas — no filter applied
+          const rawData = tmpCtx.getImageData(0, 0, W, H).data;
+
+          // Median-cut: find 256 best representative colors for this frame
+          const palette = quantize(rawData, 256);
+
+          // Map every pixel to nearest palette entry
+          const indexed = applyPalette(rawData, palette);
+
+          encoder.writeFrame(indexed, W, H, { palette, delay: delayCenti });
         }
-        gif.addFrame(allFrames[i].canvas, { delay: allFrames[i].delay, copy: false });
-      }
 
-      setProgress(92, 'Kaydediliyor...');
-      gif.on('progress', p => setProgress(92 + p * 6, 'Kaydediliyor...'));
-      gif.on('finished', blob => {
-        if (workerUrl.startsWith('blob:')) URL.revokeObjectURL(workerUrl);
-        setProgress(100, 'Tamamlandı!');
-        
+        encoder.finish();
+        setProgress(97, 'GIF kaydediliyor...');
+        await sleep(0);
+
+        const bytes = encoder.bytes();
+        const blob = new Blob([bytes], { type: 'image/gif' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -1250,15 +1695,16 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 15000);
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
 
-        setTimeout(() => {
-          renderOverlay.classList.remove('show');
-          lockSettings(false);
-        }, 1500);
-      });
+        setProgress(100, 'Tamamlandı!');
+        setTimeout(() => { renderOverlay.classList.remove('show'); lockSettings(false); }, 1500);
 
-      gif.render();
+      } catch (err) {
+        renderOverlay.classList.remove('show');
+        lockSettings(false);
+        alert('GIF hatası: ' + err.message + '\n' + err.stack);
+      }
     }
 
     async function exportMP4() {
@@ -1303,17 +1749,17 @@
 
         rec.start();
         const total = photos.length;
+        // Use actual frameDur from settings — this was the bug
         const holdF = Math.max(1, Math.round((settings.frameDur / 1000) * settings.fps));
         const fd = 1000 / settings.fps;
 
         for (let i = 0; i < total; i++) {
           setProgress((i / total) * 90, `Kare ${i + 1}/${total}...`);
           for (let f = 0; f < holdF; f++) {
-            ctx.fillStyle = settings.bgColor;
+            ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, off.width, off.height);
             drawImageFit(ctx, photos[i].img, 0, 0, off.width, off.height, i);
-            drawText(ctx, settings.text, off.width, off.height);
-            await sleep(fd / 1000);
+            await sleep(fd);
           }
         }
         await sleep(200);
@@ -1368,6 +1814,111 @@
     // Export Button Events
     exportGifBtn.addEventListener('click', exportGIF);
     exportMp4Btn.addEventListener('click', exportMP4);
+
+    // ── MOBILE PANEL LOGIC ──────────────────────────────────────────────
+    let activeMobPanel = null;
+
+    function mobShowPanel(name, tabEl) {
+      const panels = { ayarlar:'mobPanelAyarlar', animasyon:'mobPanelAnimasyon', konum:'mobPanelKonum', export:'mobPanelExport' };
+      document.querySelectorAll('.mob-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+      if (activeMobPanel === name) { activeMobPanel = null; return; }
+      activeMobPanel = name;
+      document.getElementById(panels[name]).classList.add('active');
+      tabEl.classList.add('active');
+    }
+
+    // Sync mobile sliders with desktop settings (bidirectional)
+    function mSyncSliderNum(slider, numInput, valSpan, onchange) {
+      slider.addEventListener('input', e => { const v=parseFloat(e.target.value); numInput.value=v; if(valSpan) valSpan.textContent=Math.round(v); onchange(v); });
+      numInput.addEventListener('input', e => { let v=parseFloat(e.target.value); if(isNaN(v)) return; v=Math.max(parseFloat(slider.min),Math.min(parseFloat(slider.max),v)); slider.value=v; numInput.value=v; if(valSpan) valSpan.textContent=Math.round(v); onchange(v); });
+    }
+
+    // Helper: sync a mobile slider value from settings
+    function syncMobileFromSettings() {
+      document.getElementById('mWidthSlider').value = settings.width;
+      document.getElementById('mWidthNum').value = settings.width;
+      document.getElementById('mWidthVal').textContent = settings.width;
+      document.getElementById('mHeightSlider').value = settings.height;
+      document.getElementById('mHeightNum').value = settings.height;
+      document.getElementById('mHeightVal').textContent = settings.height;
+      document.getElementById('mFpsSlider').value = settings.fps;
+      document.getElementById('mFpsNum').value = settings.fps;
+      document.getElementById('mFpsVal').textContent = settings.fps;
+      document.getElementById('mBitrateSlider').value = settings.bitrate;
+      document.getElementById('mBitrateNum').value = settings.bitrate;
+      document.getElementById('mBitrateVal').textContent = settings.bitrate;
+      document.getElementById('mFrameDurSlider').value = settings.frameDur;
+      document.getElementById('mFrameDurNum').value = settings.frameDur;
+      document.getElementById('mFrameDurVal').textContent = settings.frameDur;
+    }
+
+    mSyncSliderNum(document.getElementById('mWidthSlider'), document.getElementById('mWidthNum'), document.getElementById('mWidthVal'), v => {
+      settings.width=Math.round(v); document.getElementById('widthSlider').value=v; document.getElementById('widthNum').value=v; document.getElementById('widthVal').textContent=Math.round(v); resizePreview();
+    });
+    mSyncSliderNum(document.getElementById('mHeightSlider'), document.getElementById('mHeightNum'), document.getElementById('mHeightVal'), v => {
+      settings.height=Math.round(v); document.getElementById('heightSlider').value=v; document.getElementById('heightNum').value=v; document.getElementById('heightVal').textContent=Math.round(v); resizePreview();
+    });
+    mSyncSliderNum(document.getElementById('mFpsSlider'), document.getElementById('mFpsNum'), document.getElementById('mFpsVal'), v => {
+      settings.fps=Math.round(v); document.getElementById('fpsSlider').value=v; document.getElementById('fpsNum').value=v; document.getElementById('fpsVal').textContent=Math.round(v);
+    });
+    mSyncSliderNum(document.getElementById('mBitrateSlider'), document.getElementById('mBitrateNum'), document.getElementById('mBitrateVal'), v => {
+      settings.bitrate=Math.round(v); document.getElementById('bitrateSlider').value=v; document.getElementById('bitrateNum').value=v; document.getElementById('bitrateVal').textContent=Math.round(v);
+    });
+    mSyncSliderNum(document.getElementById('mFrameDurSlider'), document.getElementById('mFrameDurNum'), document.getElementById('mFrameDurVal'), v => {
+      settings.frameDur=Math.round(v); document.getElementById('frameDurSlider').value=v; document.getElementById('frameDurNum').value=v; document.getElementById('frameDurVal').textContent=Math.round(v); updateTotalFrames();
+    });
+    mSyncSliderNum(document.getElementById('mPanXSlider'), document.getElementById('mPanXNum'), document.getElementById('mPanXVal'), v => {
+      if(selectedPhotoIndex>=0) photos[selectedPhotoIndex].panX=v; else settings.panX=v;
+      panXSlider.value=v; document.getElementById('panXNum').value=v; document.getElementById('panXVal').textContent=Math.round(v); resizePreview();
+    });
+    mSyncSliderNum(document.getElementById('mPanYSlider'), document.getElementById('mPanYNum'), document.getElementById('mPanYVal'), v => {
+      if(selectedPhotoIndex>=0) photos[selectedPhotoIndex].panY=v; else settings.panY=v;
+      panYSlider.value=v; document.getElementById('panYNum').value=v; document.getElementById('panYVal').textContent=Math.round(v); resizePreview();
+    });
+    mSyncSliderNum(document.getElementById('mZoomScaleSlider'), document.getElementById('mZoomScaleNum'), document.getElementById('mZoomScaleVal'), v => {
+      const sc=v/100; if(selectedPhotoIndex>=0) photos[selectedPhotoIndex].zoomScale=sc; else settings.zoomScale=sc;
+      zoomScaleSlider.value=v; document.getElementById('zoomScaleNum').value=v; document.getElementById('zoomScaleVal').textContent=Math.round(v); resizePreview();
+    });
+
+    // Sync mobile konum panel when photo selected
+    const origAddPhotoThumb = addPhotoThumb;
+    function syncMobileKonum() {
+      const lbl = selectedPhotoIndex >= 0 ? `Fotoğraf ${selectedPhotoIndex+1}` : 'Hiçbiri';
+      document.getElementById('mSelectedPhotoLabel').textContent = lbl;
+      if(selectedPhotoIndex >= 0) {
+        const p = photos[selectedPhotoIndex];
+        document.getElementById('mPanXSlider').value = p.panX||0;
+        document.getElementById('mPanXNum').value = p.panX||0;
+        document.getElementById('mPanXVal').textContent = Math.round(p.panX||0);
+        document.getElementById('mPanYSlider').value = p.panY||0;
+        document.getElementById('mPanYNum').value = p.panY||0;
+        document.getElementById('mPanYVal').textContent = Math.round(p.panY||0);
+        const zp = Math.round((p.zoomScale||1)*100);
+        document.getElementById('mZoomScaleSlider').value = zp;
+        document.getElementById('mZoomScaleNum').value = zp;
+        document.getElementById('mZoomScaleVal').textContent = zp;
+      }
+    }
+    // Patch desktop thumb click to also update mobile
+    const _origAddPhotoThumbFn = window.addPhotoThumb;
+    document.addEventListener('click', e => {
+      if(e.target.closest && e.target.closest('.photo-thumb')) syncMobileKonum();
+    });
+
+    // Mobile aspect ratio select
+    document.getElementById('mAspectRatio').addEventListener('change', e => {
+      document.getElementById('aspectRatio').value = e.target.value;
+      document.getElementById('aspectRatio').dispatchEvent(new Event('change'));
+      syncMobileFromSettings();
+    });
+
+    // Also keep lockSettings covering mobile inputs
+    const _origLockSettings = lockSettings;
+    lockSettings = function(locked) {
+      _origLockSettings(locked);
+      document.querySelectorAll('.mob-panel input, .mob-panel select').forEach(el => { el.disabled = locked; });
+    };
 
     // Init
     updateAspectBadge();
